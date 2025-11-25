@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Priyu — Birthday Surprise</title>
+
+  <style>
+    /* Cake popup */
+.cake {
+  position: fixed;
+  bottom: -260px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 140px;
+  animation: cakeUp 3s ease forwards 1.4s;
+  pointer-events: none;
+}
+
+@keyframes cakeUp {
+  0% { bottom: -260px; }
+  100% { bottom: 40px; }
+}
+
+    :root{
+      --bg1: #fff1f5;
+      --bg2: #f0f9ff;
+      --accent1: #ff6fb5;
+      --accent2: #7be7ff;
+      --soft: rgba(255,255,255,0.6);
+    }
+
+    /* Page layout */
+    *{box-sizing:border-box}
+    
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, #fff7f3 0%, var(--bg1) 20%, #f9f3ff 40%, var(--bg2) 100%);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px;
+    }
+
+    /* Container */
+    .stage{
+      width: min(1100px, 96vw);
+      height: min(720px, 86vh);
+      position:relative;
+      border-radius:28px;
+      box-shadow: 0 12px 50px rgba(20,20,40,0.14);
+      background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35));
+      backdrop-filter: blur(6px) saturate(120%);
+      overflow:hidden;
+      padding:28px;
+      display:grid;
+      grid-template-columns: 520px 1fr;
+      gap:22px;
+    }
+
+    /* LEFT: Carousel / slideshow */
+    .left{
+      position:relative;
+      border-radius:18px;
+      overflow:hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.02));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .slideshow {
+      width: 86%;
+      height: 86%;
+      border-radius:16px;
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 18px 40px rgba(100,30,100,0.08);
+      transform-style:preserve-3d;
+    }
+
+    .slide {
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: opacity 1s ease, transform 1s ease;
+      opacity:0;
+      transform: scale(1.06);
+    }
+
+    .slide.active { opacity:1; transform: scale(1); z-index:5; }
+
+    .slide img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    /* overlay text on slideshow */
+    .slide-text {
+      position:absolute;
+      left:18px;
+      bottom:18px;
+      padding:10px 14px;
+      border-radius:12px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18));
+      color:white;
+      font-weight:600;
+      font-size:20px;
+      backdrop-filter: blur(6px);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    /* RIGHT: controls, name reveal etc */
+    .right{
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      align-items:stretch;
+      justify-content:center;
+    }
+
+    /* NAME REVEAL CARD */
+    .name-card{
+      height: 240px;
+      border-radius:18px;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      box-shadow: inset 0 0 60px rgba(255,120,180,0.06), 0 10px 30px rgba(120,0,80,0.06);
+    }
+
+    .name-wrap {
+      text-align:center;
+    }
+
+    .reveal-title {
+      font-size:22px;
+      color:#333;
+      margin-bottom:8px;
+      font-weight:600;
+    }
+
+    /* Glowing name */
+    .big-name{
+      font-size:64px;
+      font-weight:800;
+      letter-spacing:1px;
+      color:#fff;
+      -webkit-text-stroke: 1px rgba(0,0,0,0.08);
+      position:relative;
+      text-transform:uppercase;
+      filter: drop-shadow(0 8px 30px rgba(255,120,180,0.3));
+    }
+
+    /* gradient glow animation */
+    .glow {
+      background: linear-gradient(90deg, #ff8ac6, #ffd46d, #7be7ff, #ff8ac6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      background-size: 300% 100%;
+      animation: shimmer 4s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% 50%; filter: blur(0); text-shadow: 0 0 8px rgba(255,140,200,0.6); }
+      50% { background-position: 100% 50%; filter: blur(0.3px); text-shadow: 0 0 18px rgba(255,200,255,0.9); }
+      100% { background-position: 0% 50%; filter: blur(0); text-shadow: 0 0 8px rgba(255,140,200,0.6); }
+    }
+
+    /* reveal shine bar */
+    .shine-bar {
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+    .shine {
+      position:absolute;
+      left:-30%;
+      top:-40%;
+      width:60%;
+      height:180%;
+      transform: rotate(25deg);
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.35), rgba(255,255,255,0));
+      animation: slideShine 3.2s ease forwards;
+      mix-blend-mode: screen;
+      opacity:0.9;
+    }
+    @keyframes slideShine {
+      0% { left:-45%; opacity:0; }
+      20% { left:-20%; opacity:0.9; }
+      80% { left:120%; opacity:0.9; }
+      100% { left:120%; opacity:0; }
+    }
+
+    /* Controls (music play etc) */
+    .controls {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .btn {
+      padding:10px 16px;
+      border-radius:12px;
+      border: none;
+      cursor:pointer;
+      font-weight:600;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      color:white;
+      box-shadow: 0 8px 20px rgba(123,231,255,0.12);
+    }
+
+    .btn.ghost {
+      background: rgba(255,255,255,0.9);
+      color:#333;
+      border:1px solid rgba(0,0,0,0.06);
+      box-shadow:none;
+    }
+
+    /* small info */
+    .meta {
+      font-size:14px;
+      color:#444;
+      opacity:0.9;
+    }
+
+    /* Heavy heart rain - full screen absolute */
+    .heart {
+      position:fixed;
+      bottom:-40px;
+      font-size:22px;
+      pointer-events:none;
+      animation: heartFloat linear forwards;
+      transform-origin:center;
+    }
+    @keyframes heartFloat {
+      0% { transform: translateY(0) rotate(0deg); opacity:1; }
+      100% { transform: translateY(-140vh) rotate(220deg); opacity:0; }
+    }
+
+    /* small responsive tweaks */
+    @media (max-width:1100px){
+      .stage{ grid-template-columns: 1fr; height: 90vh; gap:12px; padding:18px;}
+      .left{ order:2; }
+      .right{ order:1; }
+      .big-name{ font-size:48px; }
+    }
+    /* Confetti */
+.confetti {
+  position: fixed;
+  top: -15px;
+  width: 10px;
+  height: 14px;
+  background: red;
+  opacity: 0.9;
+  border-radius: 2px;
+  animation: confFall linear forwards;
+  pointer-events: none;
+}
+
+@keyframes confFall {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(120vh) rotate(720deg); }
+}
+
+/* Cake floating */
+.cake-float {
+  position: fixed;
+  bottom: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 130px;
+  animation: cakeUp 3s ease forwards, cakeBounce 3s ease-in-out infinite 3s;
+  filter: drop-shadow(0 0 18px rgba(255,120,180,0.7));
+}
+
+@keyframes cakeUp {
+  0% { bottom: -200px; opacity: 0; }
+  100% { bottom: 20px; opacity: 1; }
+}
+
+@keyframes cakeBounce {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-16px); }
+}
+
+/* Golden Sparkles */
+.sparkle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, #fff9c4, #ffeb3b, #ff9800);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  animation: sparkleFloat 2s ease-out forwards;
+  filter: drop-shadow(0 0 6px #ffd54f);
+}
+
+@keyframes sparkleFloat {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: translateY(-80px) scale(0); opacity: 0; }
+}
+/* Confetti */
+.confetti {
+  position: fixed;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  opacity: 0.9;
+  border-radius: 4px;
+  pointer-events: none;
+  animation: confFall linear forwards;
+}
+@keyframes confFall {
+  0% { transform: translateY(-20px) rotate(0deg); }
+  100% { transform: translateY(120vh) rotate(720deg); }
+}
+
+  </style>
+</head>
+<body>
+    <div class="cake-float">🎂</div>
+
+  <div class="stage" id="stage">
+
+    <!-- LEFT: slideshow -->
+    <div class="left">
+      <div class="slideshow" id="slideshow">
+        <!-- slides injected by JS -->
+      </div>
+    </div>
+
+    <!-- RIGHT: name reveal + controls -->
+    <div class="right">
+      <div class="name-card">
+        <div class="name-wrap">
+          <div class="reveal-title">Happiest Birthday real one🎂💜</div>
+
+          <!-- Name with glowing animation -->
+          <div class="big-name glow" id="bigName">priyu</div>
+
+          <!-- animated shine bar over name (runs once on load) -->
+          <div class="shine-bar"><div class="shine" id="shine"></div></div>
+        </div>
+      </div>
+
+      <!-- music controls -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="meta">Background Music</div>
+          <div class="meta" style="opacity:0.8"></div>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="playBtn">Play ♥</button>
+          <button class="btn ghost" id="pauseBtn">Pause</button>
+          <button class="btn ghost" id="muteBtn">Mute</button>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
+          <div class="meta">Slideshow speed</div>
+          <input id="speedRange" type="range" min="2" max="8" value="4" step="0.5">
+          <div class="meta" id="speedVal">4s</div>
+        </div>
+      </div>
+
+      <!-- caption + CTA -->
+      <div style="margin-top:8px;">
+        <div class="meta">Photo caption</div>
+        <div style="background:var(--soft);padding:10px;border-radius:10px;margin-top:6px;">
+          <div style="font-weight:700;font-size:18px">Mazhi radha💜🌹 Ek अर्धवट ashi aapli story 🥺</div>
+          <div style="font-size:13px;color:#333;opacity:0.9;margin-top:6px;">
+            Piyu, you are not just my bestie — you are my chosen family.       💞    
+            My comfort zone 🫂💜. My emotional side
+            <h2>may you always be happy .....</h2>
+            <h2>tuzhi सगळी दुःख दूर होउ दे कायम हसत खेळत राहा 🫶
+              माझी कधी ही गरज लागू दे मी कायम तुझ्या सोबत असेन 💜
+            </h2>
+              
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- audio element (change MUSIC_URL below) -->
+  <audio id="bgMusic" loop>
+    <!-- Temporary sample; replace with your own file or hosted URL -->
+    <source src="mala ved.mp3" type="audio/mp3">
+    Your browser doesn't support audio.
+  </audio>
+
+  <script>
+    
+    /*********************
+     *  CONFIG - change these
+     *********************/
+    const NAME = "priyu"; // already set
+    // Put your own image filenames or remote URLs here.
+    const IMAGES = [
+              "s38.jpeg",
+             "s1.jpg",
+             "s13.jpg",
+             "s3.jpg",
+             "s4.jpg",
+             "s5.jpg",
+              "s31.jpg",
+             "s6.jpg",
+             "s18.jpg",
+             "s32.jpg",
+             "s34.jpeg",
+             "s7.jpg",
+             "s8.jpg",
+              "s15.jpg",
+             "s9.jpg",
+             "s35.jpeg",
+             "s10.jpg",
+              "s37.jpeg",
+             "s11.jpg",
+             "s12.jpg",
+              "s33.jpg",
+             "s14.jpg",
+             "s16.jpg",
+             "s17.jpg",
+             "s21.jpg",
+             "s20.jpg",
+             "s22.jpg",
+             "s23.jpg",
+             "s24.jpg",
+             "s25.jpg",
+             "s26.jpg",
+              "s27.jpg",
+              "s28.jpg",
+              "s29.jpg",
+              "s30.jpg",
+             "s32.jpg",
+             "s34.jpeg",
+              "s36.jpeg"
+           
+      
+    ];
+    // Default slideshow interval (seconds) - can be changed by range input
+    let slideIntervalSec = 4;
+
+    /*********************
+     *  Slideshow logic
+     *********************/
+    const slideshow = document.getElementById("slideshow");
+    let current = 0;
+    const slides = [];
+
+    IMAGES.forEach((src, idx) => {
+      const s = document.createElement("div");
+      s.className = "slide";
+      if(idx===0) s.classList.add("active");
+      s.innerHTML = `
+        <img draggable="false" src="${src}" alt="slide-${idx}" onerror="this.style.filter='blur(3px)';">
+        <div class="slide-text">❤️</div>
+      `;
+      slideshow.appendChild(s);
+      slides.push(s);
+    });
+
+    function goToSlide(i){
+      slides.forEach((sl, idx)=> {
+        sl.classList.toggle("active", idx===i);
+      });
+      current = i;
+    }
+
+    let slideTimer = null;
+    function startSlideshow(){
+      clearInterval(slideTimer);
+      slideTimer = setInterval(()=> {
+        goToSlide((current+1) % slides.length);
+      }, slideIntervalSec * 1000);
+    }
+
+    // initialize
+    startSlideshow();
+
+    // speed control
+    const speedRange = document.getElementById("speedRange");
+    const speedVal = document.getElementById("speedVal");
+    speedRange.addEventListener("input", (e)=>{
+      slideIntervalSec = Number(e.target.value);
+      speedVal.innerText = slideIntervalSec + "s";
+      startSlideshow();
+    });
+
+    /*********************
+     *  Name reveal & shine
+     *********************/
+    const bigName = document.getElementById("bigName");
+    bigName.innerText = NAME;
+
+    // trigger shine animation repeatedly (but gently)
+    const shine = document.getElementById("shine");
+    function triggerShine(){
+      // restart animation by reflow
+      shine.style.animation = "none";
+      void shine.offsetWidth;
+      shine.style.animation = "slideShine 3.2s ease forwards";
+    }
+    // initial shine
+    setTimeout(triggerShine, 600);
+    // repeat every 6s
+    setInterval(triggerShine, 6000);
+
+    /*********************
+     *  Heavy heart rain
+     *********************/
+    // creates hearts continuously — heavy effect
+    function spawnHeart(){
+      const h = document.createElement("div");
+      h.className = "heart";
+      // random heart emoji variations
+      const hearts = ["💝","piyu💜","😘","I❤️you"];
+      h.innerText = hearts[Math.floor(Math.random()*hearts.length)];
+      const size = Math.random() * 26 + 18; // 18-44px
+      h.style.fontSize = size + "px";
+      h.style.left = Math.random() * 600 + "vw";
+      h.style.opacity = (Math.random() * 0.6 + 0.5).toFixed(2);
+      // random duration between 5s-12s
+      const dur = (Math.random() * 7 + 5).toFixed(2);
+      h.style.animationDuration = dur + "1s";
+      // horizontal drift
+      h.style.transform = `translateY(0) rotate(${Math.random()*40-20}deg)`;
+      document.body.appendChild(h);
+      // remove after animation ends (plus small buffer)
+      setTimeout(()=> h.remove(), (Number(dur) * 1000) + 400);
+    }
+
+    // spawn hearts frequently for heavy rain
+    const heartBurstIntervals = [120, 150, 180]; // ms between spawns
+    let heartTimer = setInterval(spawnHeart, 150);
+
+    // For heavier burst, occasionally spawn multiple at once
+    setInterval(()=> {
+      const burst = Math.floor(Math.random()*6) + 6; // 6-11 hearts
+      for(let i=0;i<burst;i++){
+        setTimeout(spawnHeart, i*60);
+      }
+    }, 2500);
+    
+    
+     /*********************
+ * Confetti Rain (heavy)
+ *********************/
+/*function spawnConfetti() {
+  const c = document.createElement("div");
+  c.className = "confetti";
+  c.style.left = Math.random() * 100 + "vw";
+  c.style.background = `hsl(${Math.random() * 360}, 90%, 60%)`;
+  c.style.animationDuration = (2 + Math.random() * 3) + "s";
+  document.body.appendChild(c);
+  setTimeout(() => c.remove(), 5000);
+}
+
+setInterval(() => {
+  for (let i = 0; i < 8; i++) spawnConfetti();
+}, 400); 
+*/
+
+/*********************
+ * Golden Sparkles (ambient glow)
+ *********************/
+/*function spawnSparkle() {
+  const s = document.createElement("div");
+  s.className = "sparkle";
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.top = (50 + Math.random() * 50) + "vh";
+  s.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 2500);
+}
+
+setInterval(() => {
+  for (let i = 0; i < 5; i++) spawnSparkle();
+}, 900);*/
+
+    /*********************
+ * Confetti Rain
+ *********************/
+function spawnConfetti(){
+  const c = document.createElement("div");
+  c.className = "confetti";
+
+  // random color
+  c.style.backgroundColor = "hsl(" + (Math.random() * 360) + ",100%,60%)";
+
+  // random position
+  c.style.left = Math.random() * 100 + "vw";
+
+  // random size
+  const size = Math.random() * 10 + 8;
+  c.style.width = size + "px";
+  c.style.height = (size * 1.4) + "px";
+
+  // random duration
+  const dur = (Math.random() * 2 + 3).toFixed(2);
+  c.style.animationDuration = dur + "s";
+
+  document.body.appendChild(c);
+  setTimeout(()=> c.remove(), dur * 1000 + 300);
+}
+
+// continuous confetti rain
+setInterval(spawnConfetti, 180);
+
+
+    /*********************
+     *  Music controls
+     *********************/
+    const bgMusic = document.getElementById("bgMusic");
+    const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const muteBtn = document.getElementById("muteBtn");
+
+    // Note: browsers may block autoplay. Provide UI to start.
+    function updateBtns(){
+      if(bgMusic.paused) playBtn.innerText = "Play ♥";
+      else playBtn.innerText = "Playing 🔊";
+      muteBtn.innerText = bgMusic.muted ? "Unmute" : "Mute";
+    }
+
+    playBtn.addEventListener("click", async ()=>{
+      try {
+        await bgMusic.play();
+      } catch(e){
+        // fallback: user gesture required
+        console.log("Play blocked; user gesture required.");
+      }
+      updateBtns();
+    });
+
+    pauseBtn.addEventListener("click", ()=>{
+      bgMusic.pause();
+      updateBtns();
+    });
+
+    muteBtn.addEventListener("click", ()=>{
+      bgMusic.muted = !bgMusic.muted;
+      updateBtns();
+    });
+
+    // On first user interaction anywhere, try to play (helps autoplay policy)
+    function userStart() {
+      bgMusic.play().catch(()=>{});
+      document.removeEventListener("pointerdown", userStart);
+      document.removeEventListener("keydown", userStart);
+    }
+    document.addEventListener("pointerdown", userStart);
+    document.addEventListener("keydown", userStart);
+
+    // initial UI update
+    updateBtns();
+
+    /*********************
+     *  Small niceties: pause hearts when window not visible
+     *********************/
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden){
+        // pause music & reduce heart spawn
+        bgMusic.pause();
+        clearInterval(heartTimer);
+      } else {
+        startSlideshow();
+        heartTimer = setInterval(spawnHeart, 150);
+      }
+      updateBtns();
+    });
+  </script>
+
+<div class="cake">🎂   </div>
+
+</body>
+
+</html>
